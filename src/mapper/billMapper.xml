@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bill">
+<!-- 회원가입 -->
+<insert id="join" parameterType="Customer">
+	insert into customer(cust_email, cust_password, cust_nickname, cust_address, cust_birthday,	cust_gender, cust_target_price) 
+	values (#{cust_email}, #{cust_password}, #{cust_nickname}, #{cust_address}, #{cust_birthday}, #{cust_gender}, #{cust_target_price, jdbcType=VARCHAR})
+</insert>
+
+<!-- 외식 카테고리 찾기 -->
+<select id="searchRestaurant" parameterType="String" resultType="String">
+	select nvl(sub_category_num, 'null') 
+	from sub_category 
+	where category_num = 'L01' and 
+		  sub_category_name = #{keyword}
+</select>
+
+<!-- 외식 카테고리 입력에 필요한 값 -->
+<select id="countRestaurant" resultType="int">
+	select count(*) 
+	from sub_category 
+	where category_num = 'L01';
+</select>
+
+<!-- 외식 카테고리 항목 추가 -->
+<select id="insertRestaurant" parameterType="hashmap">
+	insert into sub_category values (#{category_num}, #{sub_category_num}, #{sub_category_name})
+</select>
+
+<!-- 아이템 카테고리 검색 -->
+<select id="searchItem" parameterType="String" resultType="String">
+	select nvl(sub_category_num, 'null') from category_data where minimum_category = #{keyword}
+</select>
+
+<!-- Bill 등록 -->
+<insert id="insertBill" parameterType="Bill">
+	insert into bill values(bill_seq.nextval, #{customerId}, to_date(#{billDate}, 'YYYY-MM-DD hh24:mi:ss'), #{address, jdbcType=VARCHAR}, #{storeName, jdbcType=VARCHAR}, #{totalPrice}, #{payment, jdbcType=VARCHAR}, #{img, jdbcType=VARCHAR} )
+</insert>
+
+<!-- 방금 등록한 영수증의 billno 검색 -->
+<select id="searchBillNo" resultType="int">
+	select billNo from bill where rownum = 1 order by billNo desc
+</select>
+
+<!-- Item 등록 -->
+<insert id="insertItem" parameterType="Item">
+	insert into item values(item_seq.nextval, #{billNo}, #{customerId}, #{category}, #{name}, #{price})
+</insert>
+
+</mapper>

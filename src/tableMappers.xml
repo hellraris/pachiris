@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="table">
+
+<select id="billList" resultType="Bill" parameterType="String">
+select * from bill where customerId = #{loginId}
+</select> 
+
+<select id="itemList" resultType="Item" parameterType="int">
+select * from item where billno = #{billno}
+</select> 
+
+
+</mapper>

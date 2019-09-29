@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+
+	<constant name="struts.enable.DynamicMethodInvocation" value="false" />
+
+	<!-- 문의 게시판 관련 액션 -->
+	<package name="bill" namespace="/bill" extends="default">
+	<!-- <default-interceptor-ref name="loginInterceptorStack"/> -->
+
+		<action name="goBillForm">
+			<result>/customer/uploadBillForm.jsp</result>
+		</action>
+
+		<action name="uploadBill" class="action.BillAction" method="uploadBill">
+			<result type="json"></result>
+		</action>
+
+		<action name="deleteBill" class="action.BillAction" method="deleteBill">
+			<result type="json"></result>
+		</action>
+
+		<action name="inputBill" class="action.BillAction" method="inputBill">
+			<result type="redirect">goBillForm.action</result>
+		</action>
+
+	</package>
+</struts>
+

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<!-- DB접속정보 값을 가지고 있는 파일 -->
+	<properties resource="db.properties" />
+	<typeAliases>
+		<typeAlias type="vo.Customer" alias="Customer"/>
+		<typeAlias type="vo.Bill" alias="Bill"/>
+		<typeAlias type="vo.Item" alias="Item"/>
+		<typeAlias type="vo.MainPage" alias="MainPage"/>
+
+		<typeAlias type="vo.ProgressData" alias="ProgressData"/>
+		<typeAlias type="vo.Comparison" alias="Comparison"/>
+	</typeAliases>
+
+
+	<!-- DB접속 정보 셋팅 -->
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="${driver}" />
+				<property name="url" value="${url}" />
+				<property name="username" value="${username}" />
+				<property name="password" value="${password}" />
+			</dataSource>
+		</environment>
+	</environments>
+
+	<!-- SQL문 정의한 파일 포함 -->
+	<mappers>
+		<mapper resource="mapper/customerMapper.xml"/>
+		<mapper resource="mapper/tableMapper.xml"/>
+
+		<mapper resource="mapper/billMapper.xml"/>
+		<mapper resource="mapper/statMapper.xml"/>
+	</mappers>
+
+</configuration>

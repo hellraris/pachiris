@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="table">
+
+	<select id="billList" resultType="Bill" parameterType="String">
+		select *
+		from bill
+		where customerId = #{loginId}
+		order by BILLDATE desc
+	</select>
+
+	<select id="billListForDate" resultType="Bill" parameterType="Map">
+		select *
+		from bill
+		where customerId = #{id}
+		and TO_CHAR(BILLDATE,
+		'MM/DD/YYYY') like #{dates}
+		order by BILLDATE desc
+	</select>
+
+	<select id="itemList" resultType="Item" parameterType="int">
+		select
+		i.itemno as itemNo
+		, i.billno as billNo
+		, i.customerid as customerNd
+		,
+		s.sub_category_name as category
+		, i.name as name
+		, i.price as price
+		from
+		item i , SUB_CATEGORY s
+		where billno = #{billno}
+		and i.category =
+		s.sub_category_num
+	</select>
+
+	<select id="mostVisitStore" resultType="hashmap" parameterType="String">
+		select *
+		from (select storename
+		,count(*) count
+		from bill
+		where customerId
+		= #{customerId}
+		group by storename
+		order by count desc)
+		where rownum = 1
+	</select>
+
+	<select id="mostSpendDay" resultType="hashmap" parameterType="String">
+		select *
+		from (select b.billdate billdate
+		,to_char(sum(b.totalprice)
+		,'999,999,999,999,999') sum
+		, count(*) count
+		from (select
+		to_char(billDate, 'YYYY-MM-DD') billDate
+		,totalprice
+		from bill
+		where
+		customerId = #{customerId}) b
+		group by b.billdate
+		order by
+		sum(b.totalprice) desc)
+		where rownum = 1
+	</select>
+
+	<select id="mostSpendBill" resultType="hashmap" parameterType="String">
+		select *
+		from (select storename
+		,to_char(totalprice,
+		'999,999,999,999,999') totalprice
+		from bill
+		where customerId =
+		#{customerId}
+		order by totalprice desc)
+		where rownum = 1
+	</select>
+
+	<select id="latestBills" resultType="bill" parameterType="String">
+		select
+		*
+		from (select storename
+		,to_char(billdate, 'YYYY-MM-DD HH24:mm')
+		billdate
+		,totalprice
+		from bill
+		where customerId = #{loginId}
+		order by
+		BILLDATE desc)
+		where rownum between 1 and 5
+	</select>
+
+	<select id="mainPagePie" resultType="java.util.LinkedHashMap"
+		parameterType="String">
+		select b.category_name as category_name
+		,nvl(a.total, 0)
+		as total
+		from (select category
+		,sum(price) as total
+		from (select
+		m.category_name as category
+		,i.price as price
+		from (select billno
+		from
+		bill
+		where customerid = #{customerId}
+		and billdate between
+		add_months(billdate, -1) and sysdate) bill
+		,item i
+		, major_category m
+		where i.billno = bill.billno
+		and substr(i.category, 1, 3) =
+		m.category_num)
+		group by category) a
+		, major_category b
+		where
+		a.category(+) = b.category_name
+		order by category_num
+
+	</select>
+
+	<select id="raderChart" resultType="Double" parameterType="map">
+		select
+		round((RATIO_TO_REPORT(val) OVER ())*100,2)
+		from
+		(select
+		DECODE(rownum,1, monday
+		,2, tuesday
+		,3, wednesday
+		,4, thursday
+		,5, friday
+		,6, saturday
+		,7, sunday
+		) as val
+		from
+		(select
+		<if test="type == 'all'">
+			(select SUM(totalprice) from bill where
+			to_char(billdate,'day') = '월요일' and
+			CUSTOMERID = #{customerId}) monday
+			,(select SUM(totalprice) from bill where to_char(billdate,'day') =
+			'화요일' and
+			CUSTOMERID = #{customerId}) tuesday
+			,(select SUM(totalprice)
+			from bill where to_char(billdate,'day') = '수요일' and
+			CUSTOMERID =
+			#{customerId}) wednesday
+			,(select SUM(totalprice) from bill where
+			to_char(billdate,'day') = '목요일' and
+			CUSTOMERID = #{customerId})
+			thursday
+			,(select SUM(totalprice) from bill where
+			to_char(billdate,'day') = '금요일' and
+			CUSTOMERID = #{customerId}) friday
+			,(select SUM(totalprice) from bill where to_char(billdate,'day') =
+			'토요일' and
+			CUSTOMERID = #{customerId}) saturday
+			,(select SUM(totalprice)
+			from bill where to_char(billdate,'day') = '일요일' and
+			CUSTOMERID =
+			#{customerId}) sunday
+		</if>
+		<if test="type == 'limited'">
+			(select SUM(totalprice) from bill where
+			to_char(billdate,'day') = '월요일' and
+			BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and
+			TO_DATE(20161112,'YYYYMMDD') and CUSTOMERID =
+			#{customerId}) monday
+			,(select SUM(totalprice)
+			from bill where to_char(billdate,'day') = '화요일' and
+			BILLDATE BETWEEN
+			TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD') and CUSTOMERID =
+			#{customerId}) tuesday
+			,(select SUM(totalprice) from bill where to_char(billdate,'day') =
+			'수요일' and
+			BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD') and CUSTOMERID =
+			#{customerId}) wednesday
+			,(select SUM(totalprice) from bill where
+			to_char(billdate,'day') = '목요일' and
+			BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and
+			TO_DATE(20161112,'YYYYMMDD') and CUSTOMERID =
+			#{customerId}) thursday
+			,(select
+			SUM(totalprice) from bill where to_char(billdate,'day') = '금요일' and
+			BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD') and CUSTOMERID =
+			#{customerId}) friday
+			,(select SUM(totalprice) from bill where
+			to_char(billdate,'day') = '토요일' and
+			BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and
+			TO_DATE(20161112,'YYYYMMDD') and CUSTOMERID =
+			#{customerId}) saturday
+			,(select
+			SUM(totalprice) from bill where to_char(billdate,'day') = '일요일' and
+			BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD') and CUSTOMERID =
+			#{customerId}) sunday
+		</if>
+		from bill
+		where CUSTOMERID = #{customerId}
+		group by customerid )
+		connect
+		by level &lt; 8)
+	</select>
+	<select id="donutChart" resultType="hashmap" parameterType="String">
+		select *
+		from( select storename, count(*) count
+		from bill
+		where
+		customerid = #{customerId}
+		group by storename
+		order by count desc)
+		where
+		rownum between 1 and 5
+	</select>
+
+	<select id="progressGet" resultType="progressData" parameterType="string">
+
+		select
+			   target                                                as CUST_TARGET_PRICE
+	     	   ,sums                                                 as spendMonth
+       		   ,target-sums                                          as leftMonth
+			   ,round((target-sums)/leftdays,0)                      as canMonth
+		       ,round(sums/TRUNC(sysdate+1 - TRUNC(SYSDATE,'MM')),0) as averMonth
+		       ,round((sums/target)*100)							 as precentMonth
+			   ,(select *
+		         from (select i.name
+					   from  item i
+					        ,bill b
+					   where i.billno = b.billno
+					   and i.customerId =#{customerid}
+					   and to_char(b.billdate, 'YY/MM') = to_char(sysdate,'YY/MM')
+					   order by price desc)
+				 where rownum = 1) mostSpendItem
+			   ,(select *
+			   	 from (select price
+					   from item i
+					        ,bill b
+					   where i.billno = b.billno
+					   and i.customerId =#{customerid}
+					   and to_char(b.billdate, 'YY/MM') = to_char(sysdate, 'YY/MM')
+					   order by price desc)
+				 where rownum = 1) mostSpendItemPrice
+			  ,(select *
+				from (select b.billdate  billdate
+					  from (select to_char(billDate,'YYYY-MM-DD') billDate
+								   ,totalprice
+							from bill
+							where customerId = #{customerid}
+							and to_char(billdate, 'YY/MM') = to_char(sysdate, 'YY/MM')) b
+					  group by b.billdate
+					  order by sum(b.totalprice) desc)
+				where rownum = 1) mostSpendDay
+			  ,(select *
+				from(select sum(b.totalprice)
+				     from (select to_char(billDate,'YYYY-MM-DD') billDate
+								  ,totalprice
+						   from bill
+						   where customerId = #{customerid}
+						   and to_char(billdate, 'YY/MM') = to_char(sysdate,'YY/MM')) b
+						   group by	b.billdate
+						   order by sum(b.totalprice) desc)
+					 where rownum = 1) mostSpendDayPrice
+		FROM
+		(select
+		sum(TOTALPRICE) sums
+		from bill
+		where
+		billdate
+		BETWEEN
+		TO_CHAR(TRUNC(SYSDATE,'MM'),'YYYY/MM/DD') and
+		TO_CHAR(LAST_DAY(SYSDATE),'YYYY/MM/DD')
+		and CUSTOMERID
+		=#{customerid})
+		,(select cust_target_price target
+		from customer
+		where cust_EMAIL =
+		#{customerid})
+		,(select (LAST_DAY(SYSDATE)+1 -
+		SYSDATE) as leftdays
+		from
+		dual)
+		,(select sum(TOTALPRICE) totalsum
+		from
+		bill
+		where CUSTOMERID =
+		#{customerid})
+	</select>
+
+	<select id="paymentData" parameterType="String" resultType="map">
+		select payment, round((ratio_to_report(count(*)) over())*100) per from
+		bill where customerid = #{customerid} group by payment
+	</select>
+
+	<select id="raderChartForTime" resultType="Double" parameterType="map">
+		select round((RATIO_TO_REPORT(val) OVER ())*100,2)
+		from (select DECODE(rownum,1, first
+		                          ,2, second
+		                          ,3, third
+		                          ,4, fourth
+		                          ,5, fifth
+		                          ,6, sixth
+							) as val
+			  from
+			  (select
+				<if test="type == 'all'">
+					NVL((select SUM(totalprice) 
+						 from bill
+						 where to_char(billdate,'hh24') IN (22,23,0,1)
+						 and customerId = #{customerId})
+					     ,0) first
+					,NVL((select SUM(totalprice)
+					      from bill
+					      where to_char(billdate,'hh24') BETWEEN 2 and 5
+					      and customerId =#{customerId})
+					      ,0) second
+					,NVL((select SUM(totalprice)
+					      from bill
+					      where to_char(billdate,'hh24') BETWEEN 6 and 9
+					      and customerId =#{customerId})
+					      ,0) third
+					,NVL((select SUM(totalprice)
+					      from bill
+					      where to_char(billdate,'hh24') BETWEEN 10 and 13
+					      and customerId =#{customerId})
+					      ,0) fourth 
+					,NVL((select SUM(totalprice)
+						  from bill
+						  where to_char(billdate,'hh24') BETWEEN 14	and 17
+						  and customerId =#{customerId})
+						  ,0) fifth
+					,NVL((select SUM(totalprice)
+						  from bill
+						  where	to_char(billdate,'hh24') BETWEEN 18	and 21
+						  and customerId =#{customerId})
+						  ,0) sixth
+				</if>
+				<if test="type == 'limited'">
+					NVL((select SUM(totalprice)
+						 from bill
+						 where to_char(billdate,'hh24') IN (22,23,0,1)
+						 and customerId = #{customerId}
+						 and BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD'))
+						 ,0) first
+					,NVL((select SUM(totalprice)
+						  from bill
+						  where to_char(billdate,'hh24') BETWEEN 2 and 5
+						  and customerId = #{customerId}
+						  and BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD'))
+						  ,0) second
+					,NVL((select SUM(totalprice)
+						  from bill
+						  where to_char(billdate,'hh24') BETWEEN 6 and 9
+						  and customerId =#{customerId}
+						  and BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD'))
+						  ,0) third
+					,NVL((select SUM(totalprice)
+					      from bill
+					      where to_char(billdate,'hh24') BETWEEN 10 and 13
+					      and customerId = #{customerId}
+					      and BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD'))
+					      ,0) fourth
+					,NVL((select SUM(totalprice)
+						  from bill
+						  where to_char(billdate,'hh24') BETWEEN 14 and 17
+						  and customerId =#{customerId}
+						  and BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD'))
+						  ,0) fifth
+					,NVL((select SUM(totalprice)
+						  from bill
+						  where to_char(billdate,'hh24') BETWEEN 18 and 21
+						  and customerId = #{customerId}
+						  and BILLDATE BETWEEN TO_DATE(20161112,'YYYYMMDD')-30 and TO_DATE(20161112,'YYYYMMDD'))
+						  ,0) sixth
+				</if>
+				from bill
+				where CUSTOMERID = #{customerId}
+				group by customerid )
+				connect	by level &lt; 7)
+	</select>
+	<!-- <select id = "raderChartForTime" resultType="java.util.LinkedHashMap" 
+		parameterType="map"> select groups ,round((RATIO_TO_REPORT(val) OVER ())*100,2) 
+		val from( select groups,sum(totalprice) as val from (select totalprice ,hours 
+		,CASE WHEN hours BETWEEN 0 and 5 THEN 'a' WHEN hours BETWEEN 6 and 11 THEN 
+		'b' WHEN hours BETWEEN 12 and 17 THEN 'c' WHEN hours BETWEEN 18 and 24 THEN 
+		'd' else 'default' end as groups from (select totalprice ,to_char(billdate,'hh24') 
+		hours from bill where CUSTOMERID = #{customerId} <if test = "type == 'limited'"> 
+		and BILLDATE BETWEEN sysdate-14 and sysdate </if> )) GROUP by groups) </select> -->
+
+	<!-- 년도를 상정하지 않은 쿼리입니다아ㅏ -->
+	<select id="lineChart" parameterType="String" resultType="map">
+		select
+		d.month as mon
+		,nvl(sum(decode(c.name, '외식', c.price)), 0) "외식"
+		,nvl(sum(decode(c.name, '식음료', c.price)), 0) "식음료"
+		,nvl(sum(decode(c.name, '교통', c.price)), 0) "교통"
+		,nvl(sum(decode(c.name, '패션/미용', c.price)), 0) "패션/미용"
+		,nvl(sum(decode(c.name, '문화생활', c.price)), 0) "문화생활"
+		,nvl(sum(decode(c.name, '생활용품', c.price)), 0) "생활용품"
+		,nvl(sum(decode(c.name, '사회생활', c.price)), 0) "사회생활"
+		,nvl(sum(decode(c.name, '교육', c.price)), 0) "교육"
+		,nvl(sum(decode(c.name, '주거/관리/통신', c.price)), 0) "주거/관리/통신"
+		,nvl(sum(decode(c.name, '의료/건강', c.price)), 0) "의료/건강"
+		,nvl(sum(decode(c.name, '금융', c.price)), 0) "금융"
+		,nvl(sum(decode(c.name, '기타', c.price)), 0) "기타"
+		from (select
+		to_char(b.billdate, 'MM') as mon, a.category as name, a.price
+		as price
+		from (select i.billno as billno, m.category_name as category, i.price
+		as
+		price
+		from item i , major_CATEGORY m
+		where i.customerid = #{customer}
+		and substr(i.category, 1, 3) =
+		m.category_num) a, bill b
+		where b.billno
+		= a.billno) c, month d
+		where d.month = c.mon(+)
+		group by d.month
+		order by
+		d.month
+	</select>
+
+	<select id="subCategory" resultType="map" parameterType="Map">
+		select
+		s.sub_category_name as category, sum(i.price) as sum
+		from item i,
+		major_category m, sub_category s
+		where i.customerid= #{id} and
+		i.category = s.sub_category_num and
+		m.category_num = substr(i.category,
+		1, 3) and m.category_name =
+		#{keyword} and m.category_num =
+		s.category_num
+		group by
+		s.sub_category_num, s.sub_category_name
+		order by
+		s.sub_category_num
+	</select>
+
+</mapper>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+
+    <constant name="struts.enable.DynamicMethodInvocation" value="false" />
+
+	<!-- 문의 게시판 관련 액션 -->
+    <package name="sidebar" namespace="/sidebar" extends="default">
+    <default-interceptor-ref name="loginInterceptorStack"/>
+
+		<action name="infoForm">
+ 			<result>/sidebar/infoForm.jsp</result>
+ 		</action>
+ 		
+		<action name="targetForm">
+ 			<result>/sidebar/targetForm.jsp</result>
+ 		</action>
+		
+        <action name="spendListForm" class="action.TableAction" method="goTable">
+            <result>/sidebar/spendListForm.jsp</result>
+        </action>
+        
+ 		<action name="personalStatForm">
+ 			<result>/sidebar/personalStatForm.jsp</result>
+ 		</action>
+ 		
+ 		<action name="groupStatForm">
+ 			<result>/sidebar/groupStatForm.jsp</result>
+ 		</action>
+ 		
+ 		<action name="locationForm">
+ 			<result>/sidebar/locationForm.jsp</result>
+ 		</action>
+ 		
+ 		<action name="main">
+ 			<result>/sidebar/infoForm.jsp</result>
+ 		</action>
+ 		
+ 		<!-- main.jsp 통계 -->
+ 		<action name="mainPageLoad" class="action.TableAction" method="mainPageLoad">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="mainPagePie" class="action.TableAction" method="mainPagePie">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="calendarBillList" class="action.TableAction" method="calendarBillList">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<!-- personalStatForm.jsp 통계 -->
+ 		<action name="raderChart" class="action.TableAction" method="raderChart">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="raderChartForTime" class="action.TableAction" method="raderChartForTime">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="donutChart" class="action.TableAction" method="donutChart">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="progressGet" class="action.TableAction" method="progressGet">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="paymentData" class="action.TableAction" method="paymentData">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="lineChart" class="action.TableAction" method="lineChart">
+ 			<result type="json"></result>
+ 		</action>
+ 		
+ 		<action name="subCategory" class="action.TableAction" method="subCategory">
+ 			<result type="json"></result>
+ 		</action>
+	</package>
+</struts>
+

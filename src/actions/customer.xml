@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+
+	<constant name="struts.enable.DynamicMethodInvocation" value="false" />
+
+	<!-- 문의 게시판 관련 액션 -->
+	<package name="customer" namespace="/customer" extends="default">
+
+		<action name="loginForm">
+			<result>/customer/pages-login.jsp</result>
+		</action>
+
+		<action name="login" class="action.CustomerAction" method="login">
+			<result name="input">
+				/customer/pages-login.jsp
+			</result>
+			<result name="success">
+				/sidebar/infoForm.jsp
+			</result>
+		</action>
+
+		<action name="joinForm">
+			<result>/customer/pages-sign-up.jsp</result>
+		</action>
+
+		<action name="join" class="action.CustomerAction" method="join">
+			<result name="success" type="redirect">
+				/login.action
+			</result>
+		</action>
+
+		<action name="profile">
+			<interceptor-ref name="loginInterceptorStack"/>
+			<result>/customer/profileForm.jsp</result>
+		</action>
+		
+		<action name="logout" class="action.CustomerAction" method="logout">
+			<interceptor-ref name="loginInterceptorStack"/>
+			<result name="success" type="redirect">/loginForm.action</result>
+		</action>
+
+		<action name="loadProfile" class="action.CustomerAction" method="loadProfile">
+			<interceptor-ref name="loginInterceptorStack"/>
+			<result name="success" type="json"></result>
+		</action>
+		
+		<action name="setBudget" class="action.CustomerAction" method="setBudget">
+			<interceptor-ref name="loginInterceptorStack"/>
+			<result name="success" type="json"></result>
+		</action>
+	</package>
+</struts>
+

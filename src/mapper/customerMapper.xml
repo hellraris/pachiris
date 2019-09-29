@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="customer">
+<!-- 회원가입 -->
+<insert id="join" parameterType="Customer">
+	insert into customer(cust_email, cust_password, cust_nickname, cust_address, cust_birthday,	cust_gender, cust_target_price) 
+	values (#{cust_email}, #{cust_password}, #{cust_nickname}, #{cust_address}, #{cust_birthday}, #{cust_gender}, #{cust_target_price, jdbcType=VARCHAR})
+</insert>
+
+<!-- 로그인 -->
+<select id="login" parameterType="Customer" resultType="Customer">
+select * from customer where cust_email=#{cust_email} and cust_password=#{cust_password} 
+</select>
+
+<select id="loadProfile" parameterType="String" resultType="Customer">
+select cust_email, cust_nickname, cust_address, to_char(cust_birthday, 'yyyy/mm/dd') cust_birthday, cust_target_price from customer where cust_email=#{cust_email}
+</select>
+
+<update id="setBudget" parameterType="Map">
+	update customer
+	set cust_target_price = #{target_price}
+	where cust_email=#{email} 
+</update>
+
+</mapper>
